@@ -152,7 +152,7 @@ def get_surface_high_res_mesh(sdf, resolution=100):
     z = []
     points = grid['grid_points']
 
-    for i, pnts in enumerate(torch.split(points, 100000, dim=0)):
+    for i, pnts in enumerate(torch.split(points, 10000, dim=0)):
         z.append(sdf(pnts).detach().cpu().numpy())
     z = np.concatenate(z, axis=0)
 
@@ -188,10 +188,11 @@ def get_surface_high_res_mesh(sdf, resolution=100):
 
     grid_aligned = get_grid(helper.cpu(), resolution)
 
-    grid_points = grid_aligned['grid_points']
-
+    grid_points = grid_aligned['grid_points'].cpu()
+    s_mean = s_mean.cpu()
+    vecs = vecs.cpu()
     g = []
-    for i, pnts in enumerate(torch.split(grid_points, 100000, dim=0)):
+    for i, pnts in enumerate(torch.split(grid_points, 10000, dim=0)):
         g.append(torch.bmm(vecs.unsqueeze(0).repeat(pnts.shape[0], 1, 1).transpose(1, 2),
                            pnts.unsqueeze(-1)).squeeze() + s_mean)
     grid_points = torch.cat(g, dim=0)
@@ -199,8 +200,8 @@ def get_surface_high_res_mesh(sdf, resolution=100):
     # MC to new grid
     points = grid_points
     z = []
-    for i, pnts in enumerate(torch.split(points, 100000, dim=0)):
-        z.append(sdf(pnts).detach().cpu().numpy())
+    for i, pnts in enumerate(torch.split(points, 10000, dim=0)):
+        z.append(sdf(pnts.cuda()).detach().cpu().numpy())
     z = np.concatenate(z, axis=0)
 
     meshexport = None
@@ -217,9 +218,11 @@ def get_surface_high_res_mesh(sdf, resolution=100):
                      grid_aligned['xyz'][0][2] - grid_aligned['xyz'][0][1]))
 
         verts = torch.from_numpy(verts).cuda().float()
+        vecs = vecs.cuda()
         verts = torch.bmm(vecs.unsqueeze(0).repeat(verts.shape[0], 1, 1).transpose(1, 2),
                    verts.unsqueeze(-1)).squeeze()
-        verts = (verts + grid_points[0]).cpu().numpy()
+        verts = verts.cpu()
+        verts = (verts + grid_points[0]).numpy()
 
         meshexport = trimesh.Trimesh(verts, faces, normals)
 

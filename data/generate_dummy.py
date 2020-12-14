@@ -103,7 +103,7 @@ for view in range(VIEWS):
     masks.append(depth != 0.)
 
 # Export
-data_dummy_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'dummy')
+data_dummy_dir = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'dummy', 'scan0')
 
 # Export cameras
 cameras = {}

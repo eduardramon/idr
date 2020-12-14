@@ -111,7 +111,7 @@ class IDRTrainRunner():
         # settings for camera optimization
         if self.train_cameras:
             num_images = len(self.train_dataset)
-            self.pose_vecs = torch.nn.Embedding(num_images, 7, sparse=True).cuda()
+            self.pose_vecs = utils.to_cuda(torch.nn.Embedding(num_images, 7, sparse=True))
             self.pose_vecs.weight.data.copy_(self.train_dataset.get_pose_init())
 
             self.optimizer_cam = torch.optim.SparseAdam(self.pose_vecs.parameters(), self.conf.get_float('train.learning_rate_cam'))
@@ -210,15 +210,15 @@ class IDRTrainRunner():
                 self.train_dataset.change_sampling_idx(-1)
                 indices, model_input, ground_truth = next(iter(self.plot_dataloader))
 
-                model_input["intrinsics"] = model_input["intrinsics"].cuda()
-                model_input["uv"] = model_input["uv"].cuda()
-                model_input["object_mask"] = model_input["object_mask"].cuda()
+                model_input["intrinsics"] = utils.to_cuda(model_input["intrinsics"])
+                model_input["uv"] = utils.to_cuda(model_input["uv"])
+                model_input["object_mask"] = utils.to_cuda(model_input["object_mask"])
 
                 if self.train_cameras:
-                    pose_input = self.pose_vecs(indices.cuda())
+                    pose_input = self.pose_vecs(utils.to_cuda(indices))
                     model_input['pose'] = pose_input
                 else:
-                    model_input['pose'] = model_input['pose'].cuda()
+                    model_input['pose'] = utils.to_cuda(model_input['pose'])
 
                 split = utils.split_input(model_input, self.total_pixels)
                 res = []
@@ -253,15 +253,15 @@ class IDRTrainRunner():
 
             for data_index, (indices, model_input, ground_truth) in enumerate(self.train_dataloader):
 
-                model_input["intrinsics"] = model_input["intrinsics"].cuda()
-                model_input["uv"] = model_input["uv"].cuda()
-                model_input["object_mask"] = model_input["object_mask"].cuda()
+                model_input["intrinsics"] = utils.to_cuda(model_input["intrinsics"])
+                model_input["uv"] = utils.to_cuda(model_input["uv"])
+                model_input["object_mask"] = utils.to_cuda(model_input["object_mask"])
 
                 if self.train_cameras:
-                    pose_input = self.pose_vecs(indices.cuda())
+                    pose_input = self.pose_vecs(utils.to_cuda(indices))
                     model_input['pose'] = pose_input
                 else:
-                    model_input['pose'] = model_input['pose'].cuda()
+                    model_input['pose'] = utils.to_cuda(model_input['pose'])
 
                 model_outputs = self.model(model_input)
                 loss_output = self.loss(model_outputs, ground_truth)

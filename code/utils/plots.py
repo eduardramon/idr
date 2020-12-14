@@ -7,6 +7,7 @@ import torchvision
 import trimesh
 from PIL import Image
 from utils import rend_util
+from utils import general as utils
 
 def plot(model, indices, model_outputs ,pose, rgb_gt, path, epoch, img_res, plot_nimgs, max_depth, resolution):
     # arrange data to plot
@@ -17,7 +18,7 @@ def plot(model, indices, model_outputs ,pose, rgb_gt, path, epoch, img_res, plot
     rgb_eval = model_outputs['rgb_values']
     rgb_eval = rgb_eval.reshape(batch_size, num_samples, 3)
 
-    depth = torch.ones(batch_size * num_samples).cuda().float() * max_depth
+    depth = utils.to_cuda(torch.ones(batch_size * num_samples)).float() * max_depth
     depth[network_object_mask] = rend_util.get_depth(points, pose).reshape(-1)[network_object_mask]
     depth = depth.reshape(batch_size, num_samples, 1)
     network_object_mask = network_object_mask.reshape(batch_size,-1)
@@ -174,7 +175,7 @@ def get_surface_high_res_mesh(sdf, resolution=100):
     mesh_low_res = components[areas.argmax()]
 
     recon_pc = trimesh.sample.sample_surface(mesh_low_res, 10000)[0]
-    recon_pc = torch.from_numpy(recon_pc).float().cuda()
+    recon_pc = utils.to_cuda(torch.from_numpy(recon_pc).float())
 
     # Center and align the recon pc
     s_mean = recon_pc.mean(dim=0)
@@ -182,7 +183,7 @@ def get_surface_high_res_mesh(sdf, resolution=100):
     s_cov = torch.mm(s_cov.transpose(0, 1), s_cov)
     vecs = torch.eig(s_cov, True)[1].transpose(0, 1)
     if torch.det(vecs) < 0:
-        vecs = torch.mm(torch.tensor([[1, 0, 0], [0, 0, 1], [0, 1, 0]]).cuda().float(), vecs)
+        vecs = torch.mm(utils.to_cuda(torch.tensor([[1, 0, 0], [0, 0, 1], [0, 1, 0]])).float(), vecs)
     helper = torch.bmm(vecs.unsqueeze(0).repeat(recon_pc.shape[0], 1, 1),
                        (recon_pc - s_mean).unsqueeze(-1)).squeeze()
 
@@ -201,7 +202,7 @@ def get_surface_high_res_mesh(sdf, resolution=100):
     points = grid_points
     z = []
     for i, pnts in enumerate(torch.split(points, 10000, dim=0)):
-        z.append(sdf(pnts.cuda()).detach().cpu().numpy())
+        z.append(sdf(utils.to_cuda(pnts)).detach().cpu().numpy())
     z = np.concatenate(z, axis=0)
 
     meshexport = None
@@ -217,8 +218,8 @@ def get_surface_high_res_mesh(sdf, resolution=100):
                      grid_aligned['xyz'][0][2] - grid_aligned['xyz'][0][1],
                      grid_aligned['xyz'][0][2] - grid_aligned['xyz'][0][1]))
 
-        verts = torch.from_numpy(verts).cuda().float()
-        vecs = vecs.cuda()
+        verts = utils.to_cuda(torch.from_numpy(verts)).float()
+        vecs = utils.to_cuda(vecs)
         verts = torch.bmm(vecs.unsqueeze(0).repeat(verts.shape[0], 1, 1).transpose(1, 2),
                    verts.unsqueeze(-1)).squeeze()
         verts = verts.cpu()
@@ -237,7 +238,7 @@ def get_grid_uniform(resolution):
     xx, yy, zz = np.meshgrid(x, y, z)
     grid_points = torch.tensor(np.vstack([xx.ravel(), yy.ravel(), zz.ravel()]).T, dtype=torch.float)
 
-    return {"grid_points": grid_points.cuda(),
+    return {"grid_points": utils.to_cuda(grid_points),
             "shortest_axis_length": 2.0,
             "xyz": [x, y, z],
             "shortest_axis_index": 0}
@@ -269,7 +270,7 @@ def get_grid(points, resolution):
         y = np.arange(input_min[1] - eps, input_max[1] + length / (z.shape[0] - 1) + eps, length / (z.shape[0] - 1))
 
     xx, yy, zz = np.meshgrid(x, y, z)
-    grid_points = torch.tensor(np.vstack([xx.ravel(), yy.ravel(), zz.ravel()]).T, dtype=torch.float).cuda()
+    grid_points = utils.to_cuda(torch.tensor(np.vstack([xx.ravel(), yy.ravel(), zz.ravel()]).T, dtype=torch.float))
     return {"grid_points": grid_points,
             "shortest_axis_length": length,
             "xyz": [x, y, z],
@@ -290,7 +291,7 @@ def plot_depth_maps(depth_maps, path, epoch, plot_nrow, img_res):
     img.save('{0}/depth_{1}.png'.format(path, epoch))
 
 def plot_images(rgb_points, ground_true, path, epoch, plot_nrow, img_res):
-    ground_true = (ground_true.cuda() + 1.) / 2.
+    ground_true = (utils.to_cuda(ground_true) + 1.) / 2.
     rgb_points = (rgb_points + 1. ) / 2.
 
     output_vs_gt = torch.cat((rgb_points, ground_true), dim=0)

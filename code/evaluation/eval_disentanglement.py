@@ -69,7 +69,7 @@ def evaluate(**kwargs):
 
     model.eval()
 
-    gt_pose = eval_dataset.get_gt_pose(scaled=True).cuda()
+    gt_pose = utils.to_cuda(eval_dataset.get_gt_pose(scaled=True))
     gt_quat = rend_util.rot_to_quat(gt_pose[:, :3, :3])
     gt_pose_vec = torch.cat([gt_quat, gt_pose[:, :3, 3]], 1)
 
@@ -88,7 +88,7 @@ def evaluate(**kwargs):
     q_new = CubicSpline(t_in, pose[:, :4].detach().cpu().numpy(), bc_type='periodic')
     q_new = q_new(t_out)
     q_new = q_new / np.linalg.norm(q_new, 2, 1)[:, None]
-    q_new = torch.from_numpy(q_new).cuda().float()
+    q_new = utils.to_cuda(torch.from_numpy(q_new)).float()
 
     images_dir = '{0}/novel_views_rendering'.format(evaldir)
     utils.mkdir_ifnotexists(images_dir)
@@ -96,19 +96,20 @@ def evaluate(**kwargs):
     indices, model_input, ground_truth = next(iter(eval_dataloader))
 
     for i, (new_q, scale) in enumerate(zip(q_new, s_new)):
-        torch.cuda.empty_cache()
+        if torch.cuda.is_available():
+            torch.cuda.empty_cache()
 
         new_q = new_q.unsqueeze(0)
         new_t = -rend_util.quat_to_rot(new_q)[:, :, 2] * scale
 
-        new_p = torch.eye(4).float().cuda().unsqueeze(0)
+        new_p = utils.to_cuda(torch.eye(4).float()).unsqueeze(0)
         new_p[:, :3, :3] = rend_util.quat_to_rot(new_q)
         new_p[:, :3, 3] = new_t
 
         sample = {
-            "object_mask": torch.zeros_like(model_input['object_mask']).cuda().bool(),
-            "uv": model_input['uv'].cuda(),
-            "intrinsics": model_input['intrinsics'].cuda(),
+            "object_mask": utils.to_cuda(torch.zeros_like(model_input['object_mask'])).bool(),
+            "uv": utils.to_cuda(model_input['uv']),
+            "intrinsics": utils.to_cuda(model_input['intrinsics']),
             "pose": new_p
         }
 

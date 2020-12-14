@@ -60,7 +60,7 @@ def evaluate(**kwargs):
     scale_mat = eval_dataset.get_scale_mat()
     if eval_cameras:
         num_images = len(eval_dataset)
-        pose_vecs = torch.nn.Embedding(num_images, 7, sparse=True).cuda()
+        pose_vecs = utils.to_cuda(torch.nn.Embedding(num_images, 7, sparse=True))
         pose_vecs.weight.data.copy_(eval_dataset.get_pose_init())
 
         gt_pose = eval_dataset.get_gt_pose()
@@ -128,15 +128,15 @@ def evaluate(**kwargs):
 
         psnrs = []
         for data_index, (indices, model_input, ground_truth) in enumerate(eval_dataloader):
-            model_input["intrinsics"] = model_input["intrinsics"].cuda()
-            model_input["uv"] = model_input["uv"].cuda()
-            model_input["object_mask"] = model_input["object_mask"].cuda()
+            model_input["intrinsics"] = utils.to_cuda(model_input["intrinsics"])
+            model_input["uv"] = utils.to_cuda(model_input["uv"])
+            model_input["object_mask"] = utils.to_cuda(model_input["object_mask"])
 
             if eval_cameras:
-                pose_input = pose_vecs(indices.cuda())
+                pose_input = pose_vecs(utils.to_cuda(indices))
                 model_input['pose'] = pose_input
             else:
-                model_input['pose'] = model_input['pose'].cuda()
+                model_input['pose'] = utils.to_cuda(model_input['pose'])
 
             split = utils.split_input(model_input, total_pixels)
             res = []

@@ -11,7 +11,6 @@ from model.sample_network import SampleNetwork
 class ImplicitNetwork(nn.Module):
     def __init__(
             self,
-            feature_vector_size,
             d_in,
             d_out,
             dims,
@@ -23,7 +22,7 @@ class ImplicitNetwork(nn.Module):
     ):
         super().__init__()
 
-        dims = [d_in] + dims + [d_out + feature_vector_size]
+        dims = [d_in] + dims + [d_out]
 
         self.embed_fn = None
         if multires > 0:
@@ -110,6 +109,9 @@ class RenderingNetwork(nn.Module):
     ):
         super().__init__()
 
+        self.feature_vector = torch.nn.Parameter(data=torch.Tensor(feature_vector_size), requires_grad=True)
+        self.feature_vector.data.normal_(0.0, np.sqrt(2) / np.sqrt(feature_vector_size))
+
         self.mode = mode
         dims = [d_in + feature_vector_size] + dims + [d_out]
 
@@ -133,10 +135,11 @@ class RenderingNetwork(nn.Module):
         self.relu = nn.ReLU()
         self.tanh = nn.Tanh()
 
-    def forward(self, points, normals, view_dirs, feature_vectors):
+    def forward(self, points, normals, view_dirs):
         if self.embedview_fn is not None:
             view_dirs = self.embedview_fn(view_dirs)
 
+        feature_vectors = self.feature_vector.unsqueeze(0).repeat(points.size()[0], 1)
         if self.mode == 'idr':
             rendering_input = torch.cat([points, view_dirs, normals, feature_vectors], dim=-1)
         elif self.mode == 'no_view_dir':
@@ -160,9 +163,8 @@ class RenderingNetwork(nn.Module):
 class IDRNetwork(nn.Module):
     def __init__(self, conf):
         super().__init__()
-        self.feature_vector_size = conf.get_int('feature_vector_size')
-        self.implicit_network = ImplicitNetwork(self.feature_vector_size, **conf.get_config('implicit_network'))
-        self.rendering_network = RenderingNetwork(self.feature_vector_size, **conf.get_config('rendering_network'))
+        self.implicit_network = ImplicitNetwork(**conf.get_config('implicit_network'))
+        self.rendering_network = RenderingNetwork(**conf.get_config('rendering_network'))
         self.ray_tracer = RayTracing(**conf.get_config('ray_tracer'))
         self.sample_network = SampleNetwork()
         self.object_bounding_sphere = conf.get_float('ray_tracer.object_bounding_sphere')
@@ -248,11 +250,9 @@ class IDRNetwork(nn.Module):
         return output
 
     def get_rbg_value(self, points, view_dirs):
-        output = self.implicit_network(points)
         g = self.implicit_network.gradient(points)
         normals = g[:, 0, :]
 
-        feature_vectors = output[:, 1:]
-        rgb_vals = self.rendering_network(points, normals, view_dirs, feature_vectors)
+        rgb_vals = self.rendering_network(points, normals, view_dirs)
 
         return rgb_vals

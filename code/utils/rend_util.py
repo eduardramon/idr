@@ -154,7 +154,7 @@ def get_sphere_intersection(cam_loc, ray_directions, r = 1.0):
     mask_intersect = under_sqrt > 0
 
     sphere_intersections = utils.to_cuda(torch.zeros(n_imgs * n_pix, 2)).float()
-    sphere_intersections[mask_intersect] = utils.to_cuda(torch.sqrt(under_sqrt[mask_intersect]).unsqueeze(-1) * torch.Tensor([-1, 1])).float()
+    sphere_intersections[mask_intersect] = torch.sqrt(under_sqrt[mask_intersect]).unsqueeze(-1) * utils.to_cuda(torch.Tensor([-1, 1])).float()
     sphere_intersections[mask_intersect] -= ray_cam_dot.reshape(-1)[mask_intersect].unsqueeze(-1)
 
     sphere_intersections = sphere_intersections.reshape(n_imgs, n_pix, 2)

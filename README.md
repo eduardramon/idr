@@ -27,7 +27,7 @@ To run the code in CPU, simply install the cpu requirements using pip:
 pip install -r requirements_cpu.txt
 ```
 
-NOTE: `pyrender` in Mac requires pyglet from [this fork](https://github.com/mmatl/pyglet.gitd)
+NOTE: `pyrender` in Mac requires pyglet from [this fork](https://github.com/mmatl/pyglet.git). See pyrender doc for more details.
 
 
 ## Usage

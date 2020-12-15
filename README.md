@@ -13,22 +13,30 @@ IDR able to produce high fidelity 3D surface reconstruction, by disentangling ge
 
 
 ## Installation Requirmenets
-The code is compatible with python 3.7 and pytorch 1.2. In addition, the following packages are required:  
+The code is compatible with python 3.7 and pytorch 1.2. In addition, the following packages are required:
 numpy, pyhocon, plotly, scikit-image, trimesh, imageio, opencv, torchvision.
 
-You can create an anaconda environment called `idr` with the required dependencies by running:
+You can create a GPU anaconda environment called `idr` with the required dependencies by running:
 ```
 conda env create -f environment.yml
 conda activate idr
 ```
 
+To run the code in CPU, simply install the cpu requirements using pip:
+```
+pip install -r requirements_cpu.txt
+```
+
+NOTE: `pyrender` in Mac requires pyglet from [this fork](https://github.com/mmatl/pyglet.gitd)
+
+
 ## Usage
 ### Multiview 3D reconstruction
 #### Data
-We apply our multiview surface reconstruction model to real 2D images from the <a href="http://roboimagedata.compute.dtu.dk/?page_id=36" target="_blank">DTU MVS repository</a>. 
+We apply our multiview surface reconstruction model to real 2D images from the <a href="http://roboimagedata.compute.dtu.dk/?page_id=36" target="_blank">DTU MVS repository</a>.
 The 15 scans data, including the manually annotated masks and the noisy initializations for the trainable cameras setup, can be download using:
 ```
-bash data/download_data.sh 
+bash data/download_data.sh
 ```
 
 
@@ -104,8 +112,8 @@ If you find our work useful in your research, please consider citing:
 	volume={33},
 	year={2020}
 	}
-	
-	
+
+
 ## Related papers
 Here are related works on implicit neural representation from our group:
 * [Gropp et al. - Implicit Geometric Regularization for Learning Shapes (2020)](https://arxiv.org/abs/2002.10099)

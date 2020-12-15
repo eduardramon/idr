@@ -26,7 +26,6 @@ To run the code in CPU, simply install the cpu requirements using pip:
 ```
 pip install -r requirements_cpu.txt
 ```
-
 NOTE: `pyrender` in Mac requires pyglet from [this fork](https://github.com/mmatl/pyglet.git). See pyrender doc for more details.
 
 
@@ -38,7 +37,7 @@ The 15 scans data, including the manually annotated masks and the noisy initiali
 ```
 bash data/download_data.sh
 ```
-
+ d
 
 We used our method to generate 3D reconstructions in two different setups:
 #### Training with fixed ground truth cameras

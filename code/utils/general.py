@@ -2,6 +2,12 @@ import os
 from glob import glob
 import torch
 
+def to_cuda(torch_obj):
+    if torch.cuda.is_available():
+        return torch_obj.cuda()
+    else:
+        return torch_obj
+
 def mkdir_ifnotexists(directory):
     if not os.path.exists(directory):
         os.mkdir(directory)
@@ -27,7 +33,7 @@ def split_input(model_input, total_pixels):
      '''
     n_pixels = 10000
     split = []
-    for i, indx in enumerate(torch.split(torch.arange(total_pixels).cuda(), n_pixels, dim=0)):
+    for i, indx in enumerate(torch.split(to_cuda(torch.arange(total_pixels)), n_pixels, dim=0)):
         data = model_input.copy()
         data['uv'] = torch.index_select(model_input['uv'], 1, indx)
         data['object_mask'] = torch.index_select(model_input['object_mask'], 1, indx)

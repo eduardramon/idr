@@ -146,7 +146,7 @@ class SceneDataset(torch.utils.data.Dataset):
             P = P[:3, :4]
             _, pose = rend_util.load_K_Rt_from_P(None, P)
             init_pose.append(pose)
-        init_pose = torch.cat([torch.Tensor(pose).float().unsqueeze(0) for pose in init_pose], 0).cuda()
+        init_pose = utils.to_cuda(torch.cat([torch.Tensor(pose).float().unsqueeze(0) for pose in init_pose], 0))
         init_quat = rend_util.rot_to_quat(init_pose[:, :3, :3])
         init_quat = torch.cat([init_quat, init_pose[:, :3, 3]], 1)
 

@@ -1,0 +1,10 @@
+pyhocon==0.3.56
+torch==1.7.0
+torchvision==0.8.1
+scikit-image==0.17.2
+GPUtil==1.4.0
+plotly==4.14.1
+trimesh==3.8.18
+opencv-python==4.4.0.46
+pyrender==0.1.39
+Pillow==8.0.1

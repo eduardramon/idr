@@ -3,6 +3,7 @@ import torch.nn as nn
 import numpy as np
 
 from utils import rend_util
+from utils import general as utils
 from model.embedder import *
 from model.ray_tracing import RayTracing
 from model.sample_network import SampleNetwork
@@ -203,7 +204,7 @@ class IDRNetwork(nn.Module):
             # Sample points for the eikonal loss
             eik_bounding_box = self.object_bounding_sphere
             n_eik_points = batch_size * num_pixels // 2
-            eikonal_points = torch.empty(n_eik_points, 3).uniform_(-eik_bounding_box, eik_bounding_box).cuda()
+            eikonal_points = utils.to_cuda(torch.empty(n_eik_points, 3).uniform_(-eik_bounding_box, eik_bounding_box))
             eikonal_pixel_points = points.clone()
             eikonal_pixel_points = eikonal_pixel_points.detach()
             eikonal_points = torch.cat([eikonal_points, eikonal_pixel_points], 0)
@@ -231,7 +232,7 @@ class IDRNetwork(nn.Module):
 
         view = -ray_dirs[surface_mask]
 
-        rgb_values = torch.ones_like(points).float().cuda()
+        rgb_values = utils.to_cuda(torch.ones_like(points).float())
         if differentiable_surface_points.shape[0] > 0:
             rgb_values[surface_mask] = self.get_rbg_value(differentiable_surface_points, view)
 

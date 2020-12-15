@@ -37,7 +37,7 @@ The 15 scans data, including the manually annotated masks and the noisy initiali
 ```
 bash data/download_data.sh
 ```
- d
+
 
 We used our method to generate 3D reconstructions in two different setups:
 #### Training with fixed ground truth cameras

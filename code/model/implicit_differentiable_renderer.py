@@ -102,6 +102,7 @@ class MaterialsNetwork(nn.Module):
             d_in,
             d_out,
             dims,
+            skip_in=(),
             weight_norm=True,
             multires=0
     ):
@@ -116,10 +117,16 @@ class MaterialsNetwork(nn.Module):
             dims[0] = input_ch
 
         self.num_layers = len(dims)
+        self.skip_in = skip_in
 
         for l in range(0, self.num_layers - 1):
 
-            lin = nn.Linear(dims[l], dims[l + 1])
+            if l + 1 in self.skip_in:
+                out_dim = dims[l + 1] - dims[0]
+            else:
+                out_dim = dims[l + 1]
+
+            lin = nn.Linear(dims[l], out_dim)
 
             if weight_norm:
                 lin = nn.utils.weight_norm(lin)
@@ -136,6 +143,10 @@ class MaterialsNetwork(nn.Module):
 
         for l in range(0, self.num_layers - 1):
             lin = getattr(self, "lin" + str(l))
+
+            if l in self.skip_in:
+                x = torch.cat([x, input], 1) / np.sqrt(2)
+
             x = lin(x)
 
             if l < self.num_layers - 2:

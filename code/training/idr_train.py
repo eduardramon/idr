@@ -197,9 +197,8 @@ class IDRTrainRunner():
         print("training...")
 
         pbar = tqdm(range(self.start_epoch, self.nepochs + 1))
+        pbar.set_description(f'Training IDR',)
         for epoch in pbar:
-
-            pbar.set_description(f'Training IDR',)
 
             if epoch in self.alpha_milestones:
                 self.loss.alpha = self.loss.alpha * self.alpha_factor

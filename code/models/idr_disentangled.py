@@ -96,7 +96,7 @@ class GeometryNetwork(nn.Module):
             only_inputs=True)[0]
         return gradients.unsqueeze(1)
 
-class MaterialsNetwork(nn.Module):
+class AppearanceNetwork(nn.Module):
     def __init__(
             self,
             d_in,
@@ -219,7 +219,7 @@ class IDRNetwork(nn.Module):
     def __init__(self, conf):
         super().__init__()
         self.geometry_network = GeometryNetwork(**conf.get_config('geometry_network'))
-        self.materials_network = MaterialsNetwork(**conf.get_config('materials_network'))
+        self.appearance_network = AppearanceNetwork(**conf.get_config('appearance_network'))
         self.rendering_network = RenderingNetwork(**conf.get_config('rendering_network'))
         self.ray_tracer = RayTracing(**conf.get_config('ray_tracer'))
         self.sample_network = SampleNetwork()
@@ -307,7 +307,7 @@ class IDRNetwork(nn.Module):
 
     def get_rbg_value(self, points, view_dirs):
 
-        feature_vectors = self.materials_network(points)
+        feature_vectors = self.appearance_network(points)
         g = self.geometry_network.gradient(points)
         normals = g[:, 0, :]
 

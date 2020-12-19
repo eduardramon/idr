@@ -13,6 +13,7 @@ class RayTracing(nn.Module):
             sphere_tracing_iters=10,
             n_steps=100,
             n_secant_steps=8,
+            verbose=False
     ):
         super().__init__()
 
@@ -23,6 +24,7 @@ class RayTracing(nn.Module):
         self.line_search_step = line_search_step
         self.n_steps = n_steps
         self.n_secant_steps = n_secant_steps
+        self.verbose = verbose
 
     def forward(self,
                 sdf,
@@ -60,10 +62,11 @@ class RayTracing(nn.Module):
             acc_start_dis[sampler_mask] = sampler_dists[sampler_mask]
             network_object_mask[sampler_mask] = sampler_net_obj_mask[sampler_mask]
 
-        print('----------------------------------------------------------------')
-        print('RayTracing: object = {0}/{1}, secant on {2}/{3}.'
-              .format(network_object_mask.sum(), len(network_object_mask), sampler_net_obj_mask.sum(), sampler_mask.sum()))
-        print('----------------------------------------------------------------')
+        if self.verbose:
+            print('----------------------------------------------------------------')
+            print('RayTracing: object = {0}/{1}, secant on {2}/{3}.'
+                  .format(network_object_mask.sum(), len(network_object_mask), sampler_net_obj_mask.sum(), sampler_mask.sum()))
+            print('----------------------------------------------------------------')
 
         if not self.training:
             return curr_start_points, \

@@ -3,6 +3,7 @@ from datetime import datetime
 from pyhocon import ConfigFactory
 import sys
 import torch
+from tqdm import tqdm
 
 import utils.general as utils
 import utils.plots as plt
@@ -195,7 +196,10 @@ class IDRTrainRunner():
     def run(self):
         print("training...")
 
-        for epoch in range(self.start_epoch, self.nepochs + 1):
+        pbar = tqdm(range(self.start_epoch, self.nepochs + 1))
+        for epoch in pbar:
+
+            pbar.set_description(f'Training IDR',)
 
             if epoch in self.alpha_milestones:
                 self.loss.alpha = self.loss.alpha * self.alpha_factor
@@ -278,13 +282,13 @@ class IDRTrainRunner():
                 if self.train_cameras:
                     self.optimizer_cam.step()
 
-                print(
-                    '{0} [{1}] ({2}/{3}): loss = {4}, rgb_loss = {5}, eikonal_loss = {6}, mask_loss = {7}, alpha = {8}, lr = {9}'
-                        .format(self.expname, epoch, data_index, self.n_batches, loss.item(),
-                                loss_output['rgb_loss'].item(),
-                                loss_output['eikonal_loss'].item(),
-                                loss_output['mask_loss'].item(),
-                                self.loss.alpha,
-                                self.scheduler.get_lr()[0]))
+            pbar.set_postfix({
+                'loss':  loss.item(),
+                'rgb_loss': loss_output['rgb_loss'].item(),
+                'eikonal_loss': loss_output['eikonal_loss'].item(),
+                'mask_loss': loss_output['mask_loss'].item(),
+                'alpha': self.loss.alpha,
+                'lr': self.scheduler.get_lr()[0]
+                })
 
             self.scheduler.step()

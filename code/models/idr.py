@@ -8,7 +8,7 @@ from models.embedder import *
 from models.ray_tracing import RayTracing
 from models.sample_network import SampleNetwork
 
-class ImplicitNetwork(nn.Module):
+class GeometryNetwork(nn.Module):
     def __init__(
             self,
             feature_vector_size,
@@ -161,7 +161,7 @@ class IDRNetwork(nn.Module):
     def __init__(self, conf):
         super().__init__()
         self.feature_vector_size = conf.get_int('feature_vector_size')
-        self.implicit_network = ImplicitNetwork(self.feature_vector_size, **conf.get_config('implicit_network'))
+        self.geometry_network = GeometryNetwork(self.feature_vector_size, **conf.get_config('geometry_network'))
         self.rendering_network = RenderingNetwork(self.feature_vector_size, **conf.get_config('rendering_network'))
         self.ray_tracer = RayTracing(**conf.get_config('ray_tracer'))
         self.sample_network = SampleNetwork()
@@ -179,17 +179,17 @@ class IDRNetwork(nn.Module):
 
         batch_size, num_pixels, _ = ray_dirs.shape
 
-        self.implicit_network.eval()
+        self.geometry_network.eval()
         with torch.no_grad():
-            points, network_object_mask, dists = self.ray_tracer(sdf=lambda x: self.implicit_network(x)[:, 0],
+            points, network_object_mask, dists = self.ray_tracer(sdf=lambda x: self.geometry_network(x)[:, 0],
                                                                  cam_loc=cam_loc,
                                                                  object_mask=object_mask,
                                                                  ray_directions=ray_dirs)
-        self.implicit_network.train()
+        self.geometry_network.train()
 
         points = (cam_loc.unsqueeze(1) + dists.reshape(batch_size, num_pixels, 1) * ray_dirs).reshape(-1, 3)
 
-        sdf_output = self.implicit_network(points)[:, 0:1]
+        sdf_output = self.geometry_network(points)[:, 0:1]
         ray_dirs = ray_dirs.reshape(-1, 3)
 
         if self.training:
@@ -211,10 +211,10 @@ class IDRNetwork(nn.Module):
 
             points_all = torch.cat([surface_points, eikonal_points], dim=0)
 
-            output = self.implicit_network(surface_points)
+            output = self.geometry_network(surface_points)
             surface_sdf_values = output[:N, 0:1].detach()
 
-            g = self.implicit_network.gradient(points_all)
+            g = self.geometry_network.gradient(points_all)
             surface_points_grad = g[:N, 0, :].clone().detach()
             grad_theta = g[N:, 0, :]
 
@@ -248,8 +248,8 @@ class IDRNetwork(nn.Module):
         return output
 
     def get_rbg_value(self, points, view_dirs):
-        output = self.implicit_network(points)
-        g = self.implicit_network.gradient(points)
+        output = self.geometry_network(points)
+        g = self.geometry_network.gradient(points)
         normals = g[:, 0, :]
 
         feature_vectors = output[:, 1:]

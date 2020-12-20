@@ -36,7 +36,7 @@ def plot(model, indices, model_outputs ,pose, rgb_gt, path, epoch, img_res, plot
     # plot surface
     surface_traces = get_surface_trace(path=path,
                                        epoch=epoch,
-                                       sdf=lambda x: model.implicit_network(x)[:, 0],
+                                       sdf=lambda x: model.geometry_network(x)[:, 0],
                                        resolution=resolution
                                        )
     data.append(surface_traces[0])
@@ -50,7 +50,7 @@ def plot(model, indices, model_outputs ,pose, rgb_gt, path, epoch, img_res, plot
         sampling_idx = torch.randperm(p.shape[0])[:2048]
         p = p[sampling_idx, :]
 
-        val = model.implicit_network(p)
+        val = model.geometry_network(p)
         caption = ["sdf: {0} ".format(v[0].item()) for v in val]
 
         data.append(get_3D_scatter_trace(p, name='intersection_points_{0}'.format(i), caption=caption))

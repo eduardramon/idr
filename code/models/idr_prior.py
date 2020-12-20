@@ -18,7 +18,8 @@ class DeepSDFNetwork(nn.Module):
         bias=1.0,
         skip_in=(),
         weight_norm=True,
-        multires=0
+        multires=0,
+        weights=None,
     ):
         super().__init__()
 
@@ -45,7 +46,7 @@ class DeepSDFNetwork(nn.Module):
 
             lin = nn.Linear(dims[l], out_dim)
 
-            if geometric_init:
+            if geometric_init and weights is None:
                 if l == self.num_layers - 2:
                     torch.nn.init.normal_(lin.weight, mean=np.sqrt(np.pi) / np.sqrt(dims[l]), std=0.00001)
                     torch.nn.init.constant_(lin.bias, -bias)
@@ -68,6 +69,8 @@ class DeepSDFNetwork(nn.Module):
 
         self.activation = nn.Softplus(beta=100)
 
+        if weights:
+            self.load_state_dict(torch.load(weights)['model_state_dict'])
 
     def forward(self, input):
 
@@ -103,12 +106,13 @@ class GeometryNetwork(nn.Module):
             skip_in=(),
             weight_norm=True,
             multires=0,
-            latent_size=256):
+            latent_size=256,
+            deep_sdf_weights=None):
 
         super().__init__()
 
-        self.deep_sdf = DeepSDFNetwork(latent_size+d_in, d_out, dims,
-            geometric_init, bias, skip_in, weight_norm, multires)
+        self.deep_sdf = DeepSDFNetwork(latent_size+d_in, d_out, dims, geometric_init,
+            bias, skip_in, weight_norm, multires, deep_sdf_weights)
 
         self.latent = torch.nn.Parameter(data=torch.Tensor(latent_size), requires_grad=True)
         self.latent.data.normal_(0.0, 1/latent_size)

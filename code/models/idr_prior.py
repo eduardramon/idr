@@ -107,12 +107,17 @@ class GeometryNetwork(nn.Module):
             weight_norm=True,
             multires=0,
             latent_size=256,
-            deep_sdf_weights=None):
+            deep_sdf_weights=None,
+            deep_sdf_trainable=False):
 
         super().__init__()
 
         self.deep_sdf = DeepSDFNetwork(latent_size+d_in, d_out, dims, geometric_init,
             bias, skip_in, weight_norm, multires, deep_sdf_weights)
+
+        if not deep_sdf_trainable:
+            for p in self.deep_sdf.parameters():
+                p.requires_grad = False
 
         self.latent = torch.nn.Parameter(data=torch.Tensor(latent_size), requires_grad=True)
         self.latent.data.normal_(0.0, 1/latent_size)

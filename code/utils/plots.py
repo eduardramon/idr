@@ -147,9 +147,10 @@ def get_surface_trace(path, epoch, sdf, resolution=100, return_mesh=False):
         return traces
     return None
 
-def get_surface_high_res_mesh(sdf, resolution=100):
-    # get low res mesh to sample point cloud
-    grid = get_grid_uniform(100)
+
+def get_surface_mesh(sdf, resolution=100, sphere_radius=1.):
+
+    grid = get_grid_uniform(resolution)
     z = []
     points = grid['grid_points']
 
@@ -169,10 +170,21 @@ def get_surface_high_res_mesh(sdf, resolution=100):
 
     verts = verts + np.array([grid['xyz'][0][0], grid['xyz'][1][0], grid['xyz'][2][0]])
 
-    mesh_low_res = trimesh.Trimesh(verts, faces)
-    components = mesh_low_res.split(only_watertight=False)
+    mesh = trimesh.Trimesh(verts, faces)
+    components = mesh.split(only_watertight=False)
     areas = np.array([c.area for c in components], dtype=np.float)
-    mesh_low_res = components[areas.argmax()]
+    mesh = components[areas.argmax()]
+
+    if sphere_radius:
+        keep_vertices_idx = np.linalg.norm(mesh.vertices, axis=-1) < sphere_radius
+        mesh.update_vertices(keep_vertices_idx)
+
+    return mesh
+
+
+def get_surface_high_res_mesh(sdf, resolution=100):
+    # get low res mesh to sample point cloud
+    mesh_low_res = get_surface_mesh(sdf, 100)
 
     recon_pc = trimesh.sample.sample_surface(mesh_low_res, 10000)[0]
     recon_pc = utils.to_cuda(torch.from_numpy(recon_pc).float())

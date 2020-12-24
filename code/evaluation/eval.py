@@ -105,7 +105,7 @@ def evaluate(**kwargs):
             cams_transformation[:3,:3] = c_opt * R_opt
             cams_transformation[:3,3] = t_opt
 
-        mesh = plt.get_surface_high_res_mesh(
+        mesh = plt.get_surface_mesh(
             sdf=lambda x: model.geometry_network(x)[:, 0],
             resolution=kwargs['resolution']
         )

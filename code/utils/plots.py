@@ -176,8 +176,9 @@ def get_surface_mesh(sdf, resolution=100, sphere_radius=1.):
     mesh = components[areas.argmax()]
 
     if sphere_radius:
-        keep_vertices_idx = np.linalg.norm(mesh.vertices, axis=-1) < sphere_radius
-        mesh.update_vertices(keep_vertices_idx)
+        vertices_mask = np.linalg.norm(mesh.vertices, axis=-1) < sphere_radius
+        faces_mask = vertices_mask[mesh.faces].all(axis=1)
+        mesh.update_faces(faces_mask)
 
     return mesh
 

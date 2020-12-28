@@ -73,7 +73,6 @@ def to_gl(pose):
     return pose.dot(np.array([[1, 0, 0, 0], [0, -1, 0, 0], [0, 0, -1, 0], [0, 0, 0, 1]]))
 
 # Define geometry and properties
-trimesh.primitives.Box().export('/Users/eduardramon/Desktop/cube.obj')
 mesh = pyrender.Mesh.from_trimesh(get_colored_cube(), smooth=False)
 
 # Define light

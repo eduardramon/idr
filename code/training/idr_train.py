@@ -21,8 +21,8 @@ class IDRTrainRunner():
         self.train_cameras = kwargs['train_cameras']
 
         self.expname = self.conf.get_string('train.expname') + kwargs['expname']
-        scan_id = kwargs['scan_id'] if kwargs['scan_id'] != -1 else self.conf.get_int('dataset.scan_id', default=-1)
-        if scan_id != -1:
+        scan_id = kwargs['scan_id'] if kwargs['scan_id'] else self.conf.get_string('dataset.scan_id', default=None)
+        if scan_id:
             self.expname = self.expname + '_{0}'.format(scan_id)
 
         if kwargs['is_continue'] and kwargs['timestamp'] == 'latest':
@@ -78,7 +78,7 @@ class IDRTrainRunner():
         print('Loading data ...')
 
         dataset_conf = self.conf.get_config('dataset')
-        if kwargs['scan_id'] != -1:
+        if kwargs['scan_id']:
             dataset_conf['scan_id'] = kwargs['scan_id']
 
         self.train_dataset = utils.get_class(self.conf.get_string('train.dataset_class'))(self.train_cameras,

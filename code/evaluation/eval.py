@@ -24,8 +24,8 @@ def evaluate(**kwargs):
     eval_rendering = kwargs['eval_rendering']
 
     expname = conf.get_string('train.expname') + kwargs['expname']
-    scan_id = kwargs['scan_id'] if kwargs['scan_id'] != -1 else conf.get_int('dataset.scan_id', default=-1)
-    if scan_id != -1:
+    scan_id = kwargs['scan_id'] if kwargs['scan_id'] else conf.get_string('dataset.scan_id', default=None)
+    if scan_id:
         expname = expname + '_{0}'.format(scan_id)
 
     if kwargs['timestamp'] == 'latest':
@@ -52,7 +52,7 @@ def evaluate(**kwargs):
         model.cuda()
 
     dataset_conf = conf.get_config('dataset')
-    if kwargs['scan_id'] != -1:
+    if kwargs['scan_id']:
         dataset_conf['scan_id'] = kwargs['scan_id']
     eval_dataset = utils.get_class(conf.get_string('train.dataset_class'))(eval_cameras, **dataset_conf)
 
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', type=str, default='auto', help='GPU to use [default: GPU auto]')
     parser.add_argument('--timestamp', default='latest', type=str, help='The experiemnt timestamp to test.')
     parser.add_argument('--checkpoint', default='latest',type=str,help='The trained model checkpoint to test')
-    parser.add_argument('--scan_id', type=int, default=-1, help='If set, taken to be the scan id.')
+    parser.add_argument('--scan_id', type=str, help='If set, taken to be the scan id.')
     parser.add_argument('--resolution', default=512, type=int, help='Grid resolution for marching cube')
     parser.add_argument('--is_uniform_grid', default=False, action="store_true", help='If set, evaluate marching cube with uniform grid.')
     parser.add_argument('--eval_cameras', default=False, action="store_true", help='If set, evaluate camera accuracy of trained cameras.')

@@ -46,7 +46,7 @@ For training IDR run:
 cd ./code
 python training/exp_runner.py --conf ./confs/dtu_fixed_cameras.conf --scan_id SCAN_ID
 ```
-where SCAN_ID is the id of the DTU scene to reconstruct.
+where SCAN_ID is the folder of the DTU scene to reconstruct, ie 'scan64'
 
 Then, to produce the meshed surface, run:
 ```

@@ -16,7 +16,7 @@ class SceneDataset(torch.utils.data.Dataset):
                  cam_file=None
                  ):
 
-        self.instance_dir = os.path.join('../data', data_dir, 'scan{0}'.format(scan_id))
+        self.instance_dir = os.path.join('../data', data_dir, '{0}'.format(scan_id))
 
         self.total_pixels = img_res[0] * img_res[1]
         self.img_res = img_res

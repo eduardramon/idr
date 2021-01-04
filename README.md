@@ -44,14 +44,14 @@ We used our method to generate 3D reconstructions in two different setups:
 For training IDR run:
 ```
 cd ./code
-python training/exp_runner.py --conf ./confs/dtu_fixed_cameras.conf --scan_id SCAN_ID
+python training/exp_runner.py --conf ./confs/dtu_fixed_cameras.conf --scene_id scene_id
 ```
-where SCAN_ID is the folder of the DTU scene to reconstruct, ie 'scan64'
+where scene_id is the folder of the DTU scene to reconstruct, ie 'scan64'
 
 Then, to produce the meshed surface, run:
 ```
 cd ./code
-python evaluation/eval.py  --conf ./confs/dtu_fixed_cameras.conf --scan_id SCAN_ID --checkpoint CHECKPOINT [--eval_rendering]
+python evaluation/eval.py  --conf ./confs/dtu_fixed_cameras.conf --scene_id scene_id --checkpoint CHECKPOINT [--eval_rendering]
 ```
 where CHECKPOINT is the epoch you wish to evaluate or 'latest' if you wish to take the most recent epoch.
 Turning on `--eval_rendering` will further produce and evaluate PSNR of train image reconstructions.
@@ -61,13 +61,13 @@ Turning on `--eval_rendering` will further produce and evaluate PSNR of train im
 For training IDR with cameras optimization run:
 ```
 cd ./code
-python training/exp_runner.py --train_cameras --conf ./confs/dtu_trained_cameras.conf --scan_id SCAN_ID
+python training/exp_runner.py --train_cameras --conf ./confs/dtu_trained_cameras.conf --scene_id scene_id
 ```
 
 Then, to evaluate cameras accuracy and to produce the meshed surface, run:
 ```
 cd ./code
-python evaluation/eval.py  --eval_cameras --conf ./confs/dtu_trained_cameras.conf --scan_id SCAN_ID --checkpoint CHECKPOINT [--eval_rendering]
+python evaluation/eval.py  --eval_cameras --conf ./confs/dtu_trained_cameras.conf --scene_id scene_id --checkpoint CHECKPOINT [--eval_rendering]
 ```
 
 
@@ -76,11 +76,11 @@ python evaluation/eval.py  --eval_cameras --conf ./confs/dtu_trained_cameras.con
 We have uploaded IDR trained models, and you can run the evaluation using:
 ```
 cd ./code
-python evaluation/eval.py --exps_folder trained_models --conf ./confs/dtu_fixed_cameras.conf --scan_id SCAN_ID  --checkpoint 2000 [--eval_rendering]
+python evaluation/eval.py --exps_folder trained_models --conf ./confs/dtu_fixed_cameras.conf --scene_id scene_id  --checkpoint 2000 [--eval_rendering]
 ```
 Or, for trained cameras:
 ```
-python evaluation/eval.py --exps_folder trained_models --conf ./confs/dtu_trained_cameras.conf --scan_id SCAN_ID --checkpoint 2000 --eval_cameras [--eval_rendering]
+python evaluation/eval.py --exps_folder trained_models --conf ./confs/dtu_trained_cameras.conf --scene_id scene_id --checkpoint 2000 --eval_cameras [--eval_rendering]
 ```
 
 

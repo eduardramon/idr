@@ -53,7 +53,7 @@ def evaluate(**kwargs):
     model.rendering_network = model_fake.rendering_network
 
     dataset_conf = conf.get_config('dataset')
-    dataset_conf['scan_id'] = geometry_id
+    dataset_conf['scene_id'] = geometry_id
     eval_dataset = utils.get_class(conf.get_string('train.dataset_class'))(False, **dataset_conf)
 
     eval_dataloader = torch.utils.data.DataLoader(eval_dataset,
@@ -138,8 +138,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--conf', type=str, default='./confs/dtu_fixed_cameras.conf')
     parser.add_argument('--gpu', type=str, default='auto', help='GPU to use [default: GPU auto]')
-    parser.add_argument('--geometry_id', type=int, default=65, help='The scan id of the learned geometry.')
-    parser.add_argument('--appearance_id', type=int, default=110, help='The scan id of the learned appearance.')
+    parser.add_argument('--geometry_id', type=int, default='scan65', help='The scene id of the learned geometry.')
+    parser.add_argument('--appearance_id', type=int, default='scan110', help='The scene id of the learned appearance.')
 
     opt = parser.parse_args()
 

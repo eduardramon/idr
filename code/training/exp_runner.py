@@ -17,7 +17,7 @@ if __name__ == '__main__':
     parser.add_argument('--timestamp', default='latest', type=str, help='The timestamp of the run to be used in case of continuing from a previous run.')
     parser.add_argument('--checkpoint', default='latest',type=str,help='The checkpoint epoch number of the run to be used in case of continuing from a previous run.')
     parser.add_argument('--train_cameras', default=False, action="store_true", help='If set, optimizing also camera location.')
-    parser.add_argument('--scan_id', type=str, help='If set, taken to be the scan id.')
+    parser.add_argument('--scene_id', type=str, help='If set, taken to be the scene id.')
 
     opt = parser.parse_args()
 
@@ -36,7 +36,7 @@ if __name__ == '__main__':
                                  is_continue=opt.is_continue,
                                  timestamp=opt.timestamp,
                                  checkpoint=opt.checkpoint,
-                                 scan_id=opt.scan_id,
+                                 scene_id=opt.scene_id,
                                  train_cameras=opt.train_cameras
                                  )
 

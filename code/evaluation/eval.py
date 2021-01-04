@@ -24,9 +24,9 @@ def evaluate(**kwargs):
     eval_rendering = kwargs['eval_rendering']
 
     expname = conf.get_string('train.expname') + kwargs['expname']
-    scan_id = kwargs['scan_id'] if kwargs['scan_id'] != -1 else conf.get_int('dataset.scan_id', default=-1)
-    if scan_id != -1:
-        expname = expname + '_{0}'.format(scan_id)
+    scene_id = kwargs['scene_id'] if kwargs['scene_id'] else conf.get_string('dataset.scene_id', default=None)
+    if scene_id:
+        expname = expname + '_{0}'.format(scene_id)
 
     if kwargs['timestamp'] == 'latest':
         if os.path.exists(os.path.join('../', kwargs['exps_folder_name'], expname)):
@@ -52,8 +52,8 @@ def evaluate(**kwargs):
         model.cuda()
 
     dataset_conf = conf.get_config('dataset')
-    if kwargs['scan_id'] != -1:
-        dataset_conf['scan_id'] = kwargs['scan_id']
+    if kwargs['scene_id']:
+        dataset_conf['scene_id'] = kwargs['scene_id']
     eval_dataset = utils.get_class(conf.get_string('train.dataset_class'))(eval_cameras, **dataset_conf)
 
     # settings for camera optimization
@@ -173,7 +173,7 @@ def evaluate(**kwargs):
             psnrs.append(psnr)
 
         psnrs = np.array(psnrs).astype(np.float64)
-        print("RENDERING EVALUATION {2}: psnr mean = {0} ; psnr std = {1}".format("%.2f" % psnrs.mean(), "%.2f" % psnrs.std(), scan_id))
+        print("RENDERING EVALUATION {2}: psnr mean = {0} ; psnr std = {1}".format("%.2f" % psnrs.mean(), "%.2f" % psnrs.std(), scene_id))
 
 
 def get_cameras_accuracy(pred_Rs, gt_Rs, pred_ts, gt_ts,):
@@ -245,7 +245,7 @@ if __name__ == '__main__':
     parser.add_argument('--gpu', type=str, default='auto', help='GPU to use [default: GPU auto]')
     parser.add_argument('--timestamp', default='latest', type=str, help='The experiemnt timestamp to test.')
     parser.add_argument('--checkpoint', default='latest',type=str,help='The trained model checkpoint to test')
-    parser.add_argument('--scan_id', type=int, default=-1, help='If set, taken to be the scan id.')
+    parser.add_argument('--scene_id', type=str, help='If set, taken to be the scene id.')
     parser.add_argument('--resolution', default=512, type=int, help='Grid resolution for marching cube')
     parser.add_argument('--is_uniform_grid', default=False, action="store_true", help='If set, evaluate marching cube with uniform grid.')
     parser.add_argument('--eval_cameras', default=False, action="store_true", help='If set, evaluate camera accuracy of trained cameras.')
@@ -268,7 +268,7 @@ if __name__ == '__main__':
              evals_folder_name='evals',
              timestamp=opt.timestamp,
              checkpoint=opt.checkpoint,
-             scan_id=opt.scan_id,
+             scene_id=opt.scene_id,
              resolution=opt.resolution,
              eval_cameras=opt.eval_cameras,
              eval_rendering=opt.eval_rendering
